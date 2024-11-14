@@ -172,6 +172,7 @@ if __name__ == "__main__":
             log("Training completed for epoch {}".format(epoch + 1))
             log("Training accuracy for epoch {}: {}".format(epoch + 1, correct / total))
             log("Training LossP {}".format(loss))
+
             train_loss.append(str(loss))
             train_loss.append(str(float(loss.item())))
             train_acc.append(str(correct / total))
