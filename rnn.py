@@ -37,23 +37,23 @@ class RNN(nn.Module):
         output, hidden = self.rnn(inputs, h_0)                     # pass inputs (seq length, batch, hidden) & h_0 to the RNN layer
         # print(">> output: ", output.size())                        # output:   (sample) torch.Size([29, 1, 16])  - torch.Size([output features, batch, class #])
         # print(">> hidden: ", hidden.size())                        # hidden:   torch.Size([1, 1, hidden]) - torch.Size([final hidden state, batch, hidden])
-                                       
+
         # [to fill] obtain output layer representations 
         output_layer = self.W(output)                              # perform the linear transformation on the final hidden state 
         # print(">> output_layer: ", output_layer.size())            # output_layer:  torch.Size([29, 1, 5]) - torch.Size([output features, batch, class #])
-      
+
         # [to fill] sum over output 
         # print(">> output_layer.sum(0): ", output_layer.sum(0).size())  # torch.Size([1, 5]) - sum over the layer dimension 
         sum_output = output_layer.sum(0).squeeze(0)               # squeeze the batch dimension out --> need to change line 26's dim from 1 to -1
         # print(">> sum_output: ", sum_output.size())               # sum_output:  torch.Size([5]) - torch.Size([class #])
-    
+
         # [to fill] obtain probability dist.
         predicted_vector = self.softmax(sum_output)               # pass sum_output to the softmax to get probability distribution
         # print(">> predicted_vector: ", predicted_vector.size())   # predicted_vector:  torch.Size([5]) - torch.Size([class #])
-     
+
         return predicted_vector
-        
-        
+
+
 def load_data(train_data, val_data):
     with open(train_data) as training_f:
         training = json.load(training_f)
@@ -88,14 +88,14 @@ if __name__ == "__main__":
     train_loss = []
     train_acc = []
     val_acc = []
-    
+
     with open(os.path.join(result_dir, "output.out"), "a") as f:
         def log(logging):
             print(logging)
             f.write(logging + "\n")
 
         log("========== RNN for the hidden dimension of {} ==========".format(args.hidden_dim))
-        
+
         log("========== Loading data ==========")
         train_data, valid_data = load_data(args.train_data, args.val_data) # X_data is a list of pairs (document, y); y in {0,1,2,3,4}
 
@@ -167,12 +167,13 @@ if __name__ == "__main__":
                 loss_count += 1
                 loss.backward()
                 optimizer.step()
-            
+
             print(loss_total/loss_count)
             log("Training completed for epoch {}".format(epoch + 1))
             log("Training accuracy for epoch {}: {}".format(epoch + 1, correct / total))
             log("Training LossP {}".format(loss))
             train_loss.append(str(loss))
+            train_loss.append(str(float(loss.item())))
             train_acc.append(str(correct / total))
             trainning_accuracy = correct/total
 
@@ -197,31 +198,3 @@ if __name__ == "__main__":
                 total += 1
                 # print(predicted_label, gold_label)
             log("Validation completed for epoch {}".format(epoch + 1))
-            log("Validation accuracy for epoch {}: {}".format(epoch + 1, correct / total))
-            validation_accuracy = correct/total
-
-            val_acc.append(str(correct / total))
-            if validation_accuracy < last_validation_accuracy and trainning_accuracy > last_train_accuracy:
-                stopping_condition=True
-                log("Training done to avoid overfitting!")
-                log("Best validation accuracy is: {}".format(last_validation_accuracy))
-            else:
-                last_validation_accuracy = validation_accuracy
-                last_train_accuracy = trainning_accuracy
-
-            epoch += 1
-           
-
-        val_acc_epoch = ', '.join(val_acc)
-        train_loss_epoch = ', '.join(train_loss)
-        # val_loss_epoch = ', '.join(val_loss)
-        log("val_acc_epoch {}".format(val_acc_epoch))
-        log("train_loss_epoch {}".format(train_loss_epoch))
-
-        log("========== Complete ==========")
-        log("==============================")
-        log("")
-
-    # You may find it beneficial to keep track of training accuracy or training loss;
-
-    # Think about how to update the model and what this entails. Consider ffnn.py and the PyTorch documentation for guidance
